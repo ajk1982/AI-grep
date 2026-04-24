@@ -21,6 +21,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 from typing import Optional
 
+from vault_lib.file_extract import extract_file
 from vault_lib.sections import extract_sections
 
 
@@ -238,13 +239,17 @@ def _get_file_type(file_path: Path) -> str:
         ".css": "css",
         ".js": "javascript",
         ".ts": "typescript",
+        ".docx": "docx",
+        ".xlsx": "xlsx",
+        ".xls": "xlsx",
+        ".pdf": "pdf",
     }
     return type_map.get(ext, "unknown")
 
 
 def _read_file_content(file_path: Path) -> Optional[str]:
     """
-    Read file content as text, handling encoding errors.
+    Read file content as text, handling encoding errors and binary formats.
 
     Args:
         file_path: Path to the file
@@ -252,15 +257,10 @@ def _read_file_content(file_path: Path) -> Optional[str]:
     Returns:
         File content as string, or None if unreadable
     """
-    try:
-        return file_path.read_text(encoding="utf-8")
-    except UnicodeDecodeError:
-        try:
-            return file_path.read_text(encoding="latin-1")
-        except Exception:
-            return None
-    except Exception:
-        return None
+    result = extract_file(file_path)
+    if result is not None:
+        return result["content"]
+    return None
 
 
 def index_files(

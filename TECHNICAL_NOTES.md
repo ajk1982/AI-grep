@@ -252,8 +252,9 @@ search_combined()
 
 ### Platform
 
-- **Linux-only**: Tested on Linux, may work on macOS
-- **Requires ripgrep**: `sudo apt install ripgrep`
+- **Linux and macOS supported**: Setup auto-installs ripgrep via `apt-get` on Linux or `brew` on macOS
+- **Requires ripgrep**: Installed automatically by setup if missing; manual fallback: `sudo apt install ripgrep` (Linux) or `brew install ripgrep` (macOS)
+- **uv environments supported**: If `pip` is unavailable in the active venv, setup falls back to `uv pip install`
 - **Python 3.8+**: Uses walrus operator, type hints
 
 ### Large Files

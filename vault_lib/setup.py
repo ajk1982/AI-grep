@@ -306,13 +306,49 @@ def install_dependency(package: str, is_pip: bool = False) -> bool:
                 return True
             else:
                 print(f"  Failed to install {package}: {result.stderr}")
+                uv = shutil.which("uv")
+                if uv:
+                    print(f"  Trying uv pip install {package}")
+                    try:
+                        result2 = subprocess.run(
+                            [uv, "pip", "install", package],
+                            capture_output=True,
+                            text=True,
+                            check=False,
+                        )
+                        if result2.returncode == 0:
+                            print(f"  Successfully installed {package} via uv")
+                            return True
+                        else:
+                            print(f"  Failed to install {package} via uv: {result2.stderr}")
+                    except Exception as e2:
+                        print(f"  Error installing {package} via uv: {e2}")
                 return False
         except Exception as e:
             print(f"  Error installing {package}: {e}")
             return False
     else:
         # apt-get needs sudo
-        return prompt_for_sudo(f"apt-get install -y {package}")
+        if prompt_for_sudo(f"apt-get install -y {package}"):
+            return True
+        brew = shutil.which("brew")
+        if brew:
+            print(f"  apt-get failed, trying brew install {package}")
+            try:
+                result = subprocess.run(
+                    [brew, "install", package],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                if result.returncode == 0:
+                    print(f"  Successfully installed {package} via brew")
+                    return True
+                else:
+                    print(f"  Failed to install {package} via brew: {result.stderr}")
+            except Exception as e:
+                print(f"  Error installing {package} via brew: {e}")
+        return False
 
 
 def install_all_missing(deps: dict) -> dict:
